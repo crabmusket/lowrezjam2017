@@ -15,11 +15,22 @@ const (
 )
 
 var (
+	triangleVerts = []float32{
+		0, -0.5, 0,
+		-0.5, 0.5, 0,
+		0.5, 0.5, 0,
+	}
+
 	// http://www.colourlovers.com/palette/3501633/HV
-	triangle = []float32{
-		0, -0.5, 0, /* */ 0.125, 0.431, 0.549,
-		-0.5, 0.5, 0, /* */ 1, 0.282, 0.27,
-		0.5, 0.5, 0, /* */ 1, 0.859, 0.078,
+	triangleColours = []float32{
+		0.125, 0.431, 0.549,
+		1, 0.282, 0.27,
+		1, 0.859, 0.078,
+	}
+
+	triangle = [][]float32{
+		triangleVerts,
+		triangleColours,
 	}
 )
 
@@ -91,29 +102,25 @@ func draw(window *glfw.Window, program uint32, vao uint32) {
 	gl.UseProgram(program)
 
 	gl.BindVertexArray(vao)
-	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(triangle) / 3))
+	gl.DrawArrays(gl.TRIANGLES, 0, int32(len(triangleVerts) / 3))
 
 	glfw.PollEvents()
 	window.SwapBuffers()
 }
 
-func makeVAO(points []float32) uint32 {
-	var vbo uint32
-	gl.GenBuffers(1, &vbo)
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
-	gl.BufferData(gl.ARRAY_BUFFER, 4 * len(points), gl.Ptr(points), gl.STATIC_DRAW)
-
+func makeVAO(arrays [][]float32) uint32 {
 	var vao uint32
 	gl.GenVertexArrays(1, &vao)
 	gl.BindVertexArray(vao)
 
-	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 6 * 4, nil)
-	gl.EnableVertexAttribArray(0)
-
-	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 6 * 4, gl.PtrOffset(3 * 4))
-	gl.EnableVertexAttribArray(1)
-
-	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	vbos := make([]uint32, len(arrays))
+	gl.GenBuffers(int32(len(arrays)), &vbos[0])
+	for i, points := range arrays {
+		gl.BindBuffer(gl.ARRAY_BUFFER, vbos[i])
+		gl.BufferData(gl.ARRAY_BUFFER, 4 * len(points), gl.Ptr(&arrays[i][0]), gl.STATIC_DRAW)
+		gl.VertexAttribPointer(uint32(i), 3, gl.FLOAT, false, 0, nil)
+		gl.EnableVertexAttribArray(uint32(i))
+	}
 
 	return vao
 }
