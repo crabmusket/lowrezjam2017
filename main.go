@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	gfx "github.com/crabmusket/lowrezjam2017/graphics"
+	game "github.com/crabmusket/lowrezjam2017/game"
 	"github.com/go-gl/gl/v3.2-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"runtime"
@@ -10,8 +11,8 @@ import (
 
 const (
 	VERSION = "#LOWREZJAM2017"
-	width = 600
-	height = 600
+	width = 640
+	height = 640
 )
 
 func main() {
@@ -23,7 +24,7 @@ func main() {
 	}
 	defer glfw.Terminate()
 
-	window, err := gfx.InitWindow(width, height, VERSION)
+	renderer, err := gfx.Init(width, height, VERSION)
 	if err != nil {
 		panic(err)
 	}
@@ -31,9 +32,16 @@ func main() {
 	version := gl.GoStr(gl.GetString(gl.VERSION))
 	fmt.Println("OpenGL version", version)
 
-	for !window.ShouldClose() {
-		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+	scene, err := game.BuildScene()
+	if err != nil {
+		panic(err)
+	}
+
+	for !renderer.Window.ShouldClose() {
+		renderer.Render(func() {
+			scene.Render()
+		})
+
 		glfw.PollEvents()
-		window.SwapBuffers()
 	}
 }
