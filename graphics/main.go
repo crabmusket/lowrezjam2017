@@ -95,29 +95,25 @@ func initOpenGL() error {
 }
 
 func (self Renderer) Render(renderScene func()) {
-	/*
 	// 1. render scene to framebuffer
-	gl.Viewport(0, 0, realWidth, realHeight)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, self.Framebuffer)
-	*/
+	gl.Viewport(0, 0, realWidth, realHeight)
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 	gl.Enable(gl.DEPTH_TEST)
 
 	renderScene()
 
-	/*
 	// 2. render framebuffer to quad as texture
 	width, height := self.Window.GetSize()
-	gl.Viewport(0, 0, int32(width), int32(height))
 	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
+	gl.Viewport(0, 0, int32(width), int32(height))
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 	gl.Disable(gl.DEPTH_TEST)
 	gl.UseProgram(self.Shader)
-	gl.BindVertexArray(self.Plane)
 	gl.BindTexture(gl.TEXTURE_2D, self.Texture)
+	gl.BindVertexArray(self.Plane)
 	gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil)
 	gl.BindVertexArray(0)
-	*/
 
 	self.Window.SwapBuffers()
 }
@@ -165,7 +161,6 @@ func makeFramebuffer() (uint32, uint32, error) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.BindTexture(gl.TEXTURE_2D, 0)
 
 	gl.FramebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, colour, 0)
 
@@ -181,6 +176,7 @@ func makeFramebuffer() (uint32, uint32, error) {
 		return 0, 0, fmt.Errorf("framebuffer is not complete")
 	}
 
+	gl.BindTexture(gl.TEXTURE_2D, 0)
 	gl.BindFramebuffer(gl.FRAMEBUFFER, 0)
 
 	return fb, colour, nil
@@ -226,4 +222,16 @@ func bindGeometry() uint32 {
 	gl.BindVertexArray(0)
 
 	return vao
+}
+
+func CheckAndPrintErrors() {
+	for {
+		errorCode := gl.GetError()
+		if errorCode == gl.NO_ERROR {
+			break
+		}
+
+		err := fmt.Errorf("OpenGL error:", errorCode)
+		fmt.Println(err.Error())
+	}
 }

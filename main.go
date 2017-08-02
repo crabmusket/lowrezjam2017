@@ -37,10 +37,14 @@ func main() {
 		panic(err)
 	}
 
+	gfx.CheckAndPrintErrors()
+
 	for !renderer.Window.ShouldClose() {
 		renderer.Render(func() {
 			scene.Render()
 		})
+
+		gfx.CheckAndPrintErrors()
 
 		glfw.PollEvents()
 	}
