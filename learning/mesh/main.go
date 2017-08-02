@@ -17,30 +17,21 @@ const (
 
 var (
 	rectVerts = []float32{
-		0.5, 0.5, 0,
+		0.5, 0.5, 0, // position
+		0, 1, 0, // normal
+		1, 0, // texc
+
 		0.5, -0.5, 0,
-		-0.5, -0.5, 0,
-		-0.5, 0.5, 0,
-	}
-
-	rectNormals = []float32{
 		0, 1, 0,
-		0, 1, 0,
-		0, 1, 0,
-		0, 1, 0,
-	}
-
-	rectTextureCoords = []float32{
-		1, 0,
 		1, 1,
-		0, 1,
-		0, 0,
-	}
 
-	rect = [][]float32{
-		rectVerts,
-		rectNormals,
-		rectTextureCoords,
+		-0.5, -0.5, 0,
+		0, 1, 0,
+		0, 1,
+
+		-0.5, 0.5, 0,
+		0, 1, 0,
+		0, 0,
 	}
 
 	rectIndices = []uint32{
@@ -82,15 +73,12 @@ func main() {
 		}
 	}
 	obj := objs[0]
-	fmt.Println(len(obj.Indices), len(obj.TextureCoords), len(obj.Positions))
 
 	projection := mgl.Perspective(mgl.DegToRad(45), 1, 0.1, 100)
 	view := mgl.Translate3D(0, 0, -2)
 	rectTransform := mgl.Translate3D(0, -0.5, 0).
 		Mul4(mgl.HomogRotate3D(mgl.DegToRad(-90), mgl.Vec3{1, 0, 0})).
 		Mul4(mgl.Scale3D(2, 2, 2))
-	meshTransform := mgl.Translate3D(0, 0, 0).
-		Mul4(mgl.Scale3D(0.5, 0.5, 0.5))
 
 	textureUpdates := makeTextureUpdates()
 
@@ -99,15 +87,19 @@ func main() {
 		panic(err)
 	}
 
-	whiteTex, err := makeTexture("texture-white.png", textureUpdates)
+	gridTex, err := makeTexture("texture-tiles.png", textureUpdates)
 	if err != nil {
 		panic(err)
 	}
 
-	rectVAO := makeVAO([]int{4, 4, 4}, rect, rectIndices)
-	meshVAO := makeVAO([]int{len(obj.Positions)/3, len(obj.Normals)/3, len(obj.TextureCoords)/3}, [][]float32{obj.Positions, obj.Normals, obj.TextureCoords}, obj.Indices)
+	rectVAO := makeVAO(rectVerts, rectIndices)
+	meshVAO := makeVAO(obj.Vertices, nil) //obj.Indices)
 	for !window.ShouldClose() {
 		processTextureUpdates(textureUpdates)
+
+		meshTransform := mgl.Translate3D(0, 0, 0).
+			Mul4(mgl.HomogRotate3D(mgl.DegToRad(-15 * float32(glfw.GetTime())), mgl.Vec3{0, 1, 0}.Normalize())).
+			Mul4(mgl.Scale3D(0.5, 0.5, 0.5))
 
 		gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
 		gl.UseProgram(program)
@@ -121,9 +113,9 @@ func main() {
 		gl.DrawElements(gl.TRIANGLES, int32(len(rectIndices)), gl.UNSIGNED_INT, nil)
 
 		gl.BindVertexArray(meshVAO)
-		gl.BindTexture(gl.TEXTURE_2D, whiteTex.Id)
+		gl.BindTexture(gl.TEXTURE_2D, gridTex.Id)
 		gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &meshTransform[0])
-		gl.DrawElements(gl.TRIANGLES, int32(len(obj.Indices)), gl.UNSIGNED_INT, nil)
+		gl.DrawArrays(gl.TRIANGLES, 0, int32(len(obj.Vertices) / 8))
 
 		glfw.PollEvents()
 		window.SwapBuffers()
@@ -171,28 +163,35 @@ func initOpenGL() (program uint32, err error) {
 	return
 }
 
-func makeVAO(sizes []int, arrays [][]float32, indices []uint32) uint32 {
-	var vao uint32
+func makeVAO(data []float32, indices []uint32) uint32 {
+	var vao, vbo, ebo uint32
 	gl.GenVertexArrays(1, &vao)
+	gl.GenBuffers(1, &ebo)
+	gl.GenBuffers(1, &vbo)
+
 	gl.BindVertexArray(vao)
 
-	var ebo uint32
-	gl.GenBuffers(1, &ebo)
+	gl.BindBuffer(gl.ARRAY_BUFFER, vbo)
+	gl.BufferData(gl.ARRAY_BUFFER, 4 * len(data), gl.Ptr(data), gl.STATIC_DRAW)
 
-	vbos := make([]uint32, len(arrays))
-	gl.GenBuffers(int32(len(arrays)), &vbos[0])
-	for i, points := range arrays {
-		gl.BindBuffer(gl.ARRAY_BUFFER, vbos[i])
-		gl.BufferData(gl.ARRAY_BUFFER, 4 * len(points), gl.Ptr(&arrays[i][0]), gl.STATIC_DRAW)
-
-		if indices != nil {
-			gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
-			gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, 4 * len(indices), gl.Ptr(&indices[0]), gl.STATIC_DRAW)
-		}
-
-		gl.VertexAttribPointer(uint32(i), int32(len(points) / sizes[i]), gl.FLOAT, false, 0, nil)
-		gl.EnableVertexAttribArray(uint32(i))
+	if indices != nil {
+		gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER, ebo)
+		gl.BufferData(gl.ELEMENT_ARRAY_BUFFER, 4 * len(indices), gl.Ptr(indices), gl.STATIC_DRAW)
 	}
+
+	// positions
+	gl.VertexAttribPointer(0, 3, gl.FLOAT, false, 8*4, nil)
+	gl.EnableVertexAttribArray(0)
+
+	// normals
+	gl.VertexAttribPointer(1, 3, gl.FLOAT, false, 8*4, gl.PtrOffset(3*4))
+	gl.EnableVertexAttribArray(1)
+
+	// tex coords
+	gl.VertexAttribPointer(2, 2, gl.FLOAT, false, 8*4, gl.PtrOffset(6*4))
+	gl.EnableVertexAttribArray(2)
+
+	gl.BindVertexArray(0)
 
 	return vao
 }

@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	//"fmt"
+	"fmt"
 )
 
 type Obj struct{
@@ -21,9 +21,7 @@ type Obj struct{
 
 type Object struct{
 	Name string
-	Positions []float32
-	TextureCoords []float32
-	Normals []float32
+	Vertices []float32
 	Indices []uint32
 }
 
@@ -147,28 +145,34 @@ func readObj(reader io.Reader) ([]*Object, []*ObjWarning, error) {
 
 func (self Obj) Finish() *Object {
 	numVerts := len(self.FaceVerts)
+	stride := 3 + 3 + 2
+	fmt.Println(numVerts, numVerts * stride)
 
 	object := &Object{
 		Name: self.Name,
 		Indices: make([]uint32, numVerts),
-		Positions: make([]float32, len(self.Vertices)),
-		TextureCoords: make([]float32, numVerts * 2),
-		Normals: make([]float32, numVerts * 3),
+		Vertices: make([]float32, numVerts * stride),
 	}
 
-	copy(object.Positions, self.Vertices)
+	if false {
+		fmt.Println()
+	}
 
 	for vert := 0; vert < numVerts; vert += 1 {
-		// OBJ indexes are 1-based whereas OpenGL is 0-based
-		object.Indices[vert] = self.FaceVerts[vert] - 1
+		// For now don't bother indexing properly. Just do what you do.
+		object.Indices[vert] = uint32(vert)
 
-		tObj := vert * 2
-		tSelf := (self.VertTextureCoords[vert] - 1) * 2
-		copy(object.TextureCoords[tObj:tObj+2], self.TextureCoords[tSelf:tSelf+2])
+		begin := vert * stride
+		vertIndex := (self.FaceVerts[vert] - 1) * 3
+		copy(object.Vertices[begin:begin+3], self.Vertices[vertIndex:vertIndex+3])
 
-		nObj := vert * 3
-		nSelf := (self.VertNormals[vert] - 1) * 3
-		copy(object.Normals[nObj:nObj+3], self.Normals[nSelf:nSelf+3])
+		normal := begin + 3
+		normalIndex := (self.VertNormals[vert] - 1) * 3
+		copy(object.Vertices[normal:normal+3], self.Normals[normalIndex:normalIndex+3])
+
+		texture := normal + 3
+		textureIndex := (self.VertTextureCoords[vert] - 1) * 2
+		copy(object.Vertices[texture:texture+2], self.TextureCoords[textureIndex:textureIndex+2])
 	}
 
 	return object
@@ -306,32 +310,4 @@ func handleFace(obj *Obj, components []string) []*ObjWarning {
 	}
 
 	return warnings
-}
-
-func (self Obj) HasVertices() bool {
-	return len(self.Vertices) > 0
-}
-
-func (self Obj) HasNormals() bool {
-	return len(self.Normals) > 0
-}
-
-func (self Obj) HasFaceVerts() bool {
-	return len(self.FaceVerts) > 0
-}
-
-func (self Obj) HasVertTextureCoords() bool {
-	return len(self.VertTextureCoords) > 0
-}
-
-func (self Obj) HasVertNormals() bool {
-	return len(self.VertNormals) > 0
-}
-
-func (self Obj) IsEmpty() bool {
-	return !self.HasVertices() &&
-		!self.HasNormals() &&
-		!self.HasFaceVerts() &&
-		!self.HasVertTextureCoords() &&
-		!self.HasVertNormals()
 }
