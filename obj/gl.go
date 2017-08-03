@@ -1,4 +1,4 @@
-package loadobj
+package obj
 
 import (
 	"github.com/go-gl/gl/v3.2-core/gl"
@@ -33,6 +33,14 @@ func (self *Object) Bind() {
 	gl.BindVertexArray(0)
 
 	self.Id = vao
+	self.Vbo = vbo
+	self.Ebo = ebo
+}
+
+func (self *Object) Unbind() {
+	gl.DeleteVertexArrays(1, &self.Id)
+	gl.DeleteBuffers(1, &self.Vbo)
+	gl.DeleteBuffers(1, &self.Ebo)
 }
 
 func (self Object) Render() {

@@ -29,8 +29,11 @@ func Load(filename string) (*Texture, error) {
 }
 
 func (self *Texture) Bind(data []byte, size *image.Point) {
-	var tex uint32
-	gl.GenTextures(1, &tex)
+	tex := self.Id
+	if tex == 0 {
+		gl.GenTextures(1, &tex)
+	}
+
 	gl.BindTexture(gl.TEXTURE_2D, tex)
 	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, int32(size.X), int32(size.Y), 0, gl.RGBA, gl.UNSIGNED_BYTE, gl.Ptr(data))
 	gl.GenerateMipmap(gl.TEXTURE_2D)
@@ -38,6 +41,7 @@ func (self *Texture) Bind(data []byte, size *image.Point) {
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 	gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
 	gl.BindTexture(gl.TEXTURE_2D, 0)
 	self.Id = tex
 }

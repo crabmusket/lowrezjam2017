@@ -27,12 +27,19 @@ type StaticRendered struct{
 }
 
 func BuildScene() (*Scene, error) {
-	levelTexture, err := tex.Load("./resources/textures/level.png")
+	levelTexture, err := tex.Load("resources/textures/level.png")
 	if err != nil {
 		return nil, err
 	}
 
-	level1, warnings, err := obj.Load("./resources/meshes/floor1.obj")
+	if true {
+		err := levelTexture.Watch()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	level1, warnings, err := obj.Load("resources/meshes/floor1.obj")
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +47,14 @@ func BuildScene() (*Scene, error) {
 		fmt.Printf("%+v\n", warning)
 	}
 
-	staticShader, err := gfx.MakeProgram("./resources/shaders/static.vert.glsl", "./resources/shaders/static.frag.glsl")
+	if true {
+		err := level1.Watch()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	staticShader, err := gfx.MakeProgram("resources/shaders/static.vert.glsl", "resources/shaders/static.frag.glsl")
 	if err != nil {
 		return nil, err
 	}

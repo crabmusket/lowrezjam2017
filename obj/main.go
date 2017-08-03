@@ -1,7 +1,8 @@
-package loadobj
+package obj
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -9,14 +10,15 @@ import (
 )
 
 type Object struct{
-	Name string
+	Filename string
 	Id uint32
 	Vertices []float32
 	Indices []uint32
+	Vbo uint32
+	Ebo uint32
 }
 
 type ObjData struct{
-	Name string
 	Vertices []float32
 	Normals []float32
 	TextureCoords []float32
@@ -26,7 +28,7 @@ type ObjData struct{
 }
 
 type Warning struct {
-	File string
+	Filename string
 	Line int
 	Warning string
 }
@@ -43,8 +45,11 @@ func Load(filename string) (*Object, []*Warning, error) {
 		return nil, nil, err
 	}
 
+	obj.Bind()
+
+	obj.Filename = filename
 	for _, warning := range warnings {
-		warning.File = filename
+		warning.Filename = filename
 	}
 
 	return obj, warnings, nil
@@ -54,7 +59,6 @@ func Read(reader io.Reader) (*Object, []*Warning, error) {
 	obj := new(ObjData)
 	var warnings []*Warning
 
-	obj.Name = ""
 	index := 0
 
 	scanner := bufio.NewScanner(reader)
@@ -153,7 +157,6 @@ func (self ObjData) Finish() (*Object, error) {
 	stride := 3 + 3 + 2
 
 	object := &Object{
-		Name: self.Name,
 		Indices: make([]uint32, numVerts),
 		Vertices: make([]float32, numVerts * stride),
 	}
@@ -176,7 +179,9 @@ func (self ObjData) Finish() (*Object, error) {
 		copy(object.Vertices[texture:texture+2], correctCoords)
 	}
 
-	object.Bind()
+	if len(object.Vertices) == 0 || len(object.Indices) == 0 {
+		return nil, fmt.Errorf("obj data is empty")
+	}
 
 	return object, nil
 }

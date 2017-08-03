@@ -11,20 +11,25 @@ type TextureUpdate struct {
 	Texture *Texture
 }
 
-func makeTextureUpdates() chan *TextureUpdate {
-	return make(chan *TextureUpdate, 10)
+var (
+	updates chan *TextureUpdate
+)
+
+func init() {
+	updates = make(chan *TextureUpdate, 10)
 }
 
-func processTextureUpdates(updates <-chan *TextureUpdate) {
+func ProcessUpdates() {
 	select {
 	case update := <-updates:
+		// TODO: release textures
 		update.Texture.Bind(update.Data, update.Size)
 	default:
 		// do nothing
 	}
 }
 
-func (self *Texture) Watch(updates chan<- *TextureUpdate) error {
+func (self *Texture) Watch() error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
