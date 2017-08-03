@@ -3,8 +3,8 @@ package game
 import (
 	"fmt"
 	gfx "github.com/crabmusket/lowrezjam2017/graphics"
-	obj "github.com/crabmusket/lowrezjam2017/loadobj"
-	tex "github.com/crabmusket/lowrezjam2017/textures"
+	obj "github.com/crabmusket/lowrezjam2017/obj"
+	tex "github.com/crabmusket/lowrezjam2017/tex"
 	"github.com/go-gl/gl/v3.2-core/gl"
 	mgl "github.com/go-gl/mathgl/mgl32"
 )
@@ -27,7 +27,7 @@ type StaticRendered struct{
 }
 
 func BuildScene() (*Scene, error) {
-	levelTexture, err := tex.Load("./resources/level.png")
+	levelTexture, err := tex.Load("./resources/textures/level.png")
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func BuildScene() (*Scene, error) {
 		fmt.Printf("%+v\n", warning)
 	}
 
-	staticShader, err := gfx.MakeProgram("./resources/static.vert.glsl", "./resources/static.frag.glsl")
+	staticShader, err := gfx.MakeProgram("./resources/shaders/static.vert.glsl", "./resources/shaders/static.frag.glsl")
 	if err != nil {
 		return nil, err
 	}

@@ -40,7 +40,7 @@ func Init(width int, height int, title string) (*Renderer, error) {
 		return nil, err
 	}
 
-	screenShader, err := MakeProgram("./resources/screen.vert.glsl", "./resources/screen.frag.glsl")
+	screenShader, err := MakeProgram("./resources/shaders/screen.vert.glsl", "./resources/shaders/screen.frag.glsl")
 	if err != nil {
 		return nil, err
 	}
