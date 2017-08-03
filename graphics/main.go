@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	realWidth = 640
-	realHeight = 640
+	realWidth = 64
+	realHeight = 64
 )
 
 type Renderer struct{
@@ -186,7 +186,7 @@ var (
 	planeVerts = []float32{
 		// pos  tex
 		-1, -1, 0, 0,
-		1, -1, 0, 1,
+		1, -1, 1, 0,
 		1, 1, 1, 1,
 		-1, 1, 0, 1,
 	}

@@ -11,8 +11,8 @@ import (
 
 const (
 	VERSION = "#LOWREZJAM2017"
-	width = 640
-	height = 640
+	width = 320
+	height = 320
 )
 
 func main() {
