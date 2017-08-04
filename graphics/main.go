@@ -6,6 +6,7 @@ import (
 	"github.com/go-gl/gl/v3.2-core/gl"
 	"io/ioutil"
 	"strings"
+	"runtime"
 )
 
 const (
@@ -15,6 +16,7 @@ const (
 
 type Renderer struct{
 	Window *glfw.Window
+	Version string
 	Shader uint32
 	Framebuffer uint32
 	Texture uint32
@@ -22,6 +24,13 @@ type Renderer struct{
 }
 
 func Init(width int, height int, title string) (*Renderer, error) {
+	runtime.LockOSThread()
+
+	err := glfw.Init()
+	if err != nil {
+		return nil, err
+	}
+
 	glfw.WindowHint(glfw.Resizable, glfw.False)
 	glfw.WindowHint(glfw.ContextVersionMajor, 3)
 	glfw.WindowHint(glfw.ContextVersionMinor, 2)
@@ -54,6 +63,7 @@ func Init(width int, height int, title string) (*Renderer, error) {
 
 	renderer := &Renderer{
 		Window: window,
+		Version: gl.GoStr(gl.GetString(gl.VERSION)),
 		Shader: screenShader,
 		Framebuffer: framebuffer,
 		Texture: texture,
@@ -61,6 +71,10 @@ func Init(width int, height int, title string) (*Renderer, error) {
 	}
 
 	return renderer, nil
+}
+
+func Terminate() {
+	defer glfw.Terminate()
 }
 
 func MakeProgram(vert string, frag string) (uint32, error) {
@@ -92,6 +106,10 @@ func initOpenGL() error {
 	gl.Enable(gl.DEPTH_TEST)
 
 	return nil
+}
+
+func (self Renderer) Run() bool {
+	return !self.Window.ShouldClose()
 }
 
 func (self Renderer) Render(renderScene func()) {

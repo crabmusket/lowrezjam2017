@@ -19,6 +19,7 @@ func init() {
 	updates = make(chan *ObjectUpdate, 10)
 }
 
+// You must call this function from the main thread which is running opengl.
 func ProcessUpdates(warn func([]*Warning)) {
 	select {
 	case update := <-updates:

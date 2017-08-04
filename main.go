@@ -6,9 +6,6 @@ import (
 	game "github.com/crabmusket/lowrezjam2017/game"
 	obj "github.com/crabmusket/lowrezjam2017/obj"
 	tex "github.com/crabmusket/lowrezjam2017/tex"
-	"github.com/go-gl/gl/v3.2-core/gl"
-	"github.com/go-gl/glfw/v3.2/glfw"
-	"runtime"
 )
 
 const (
@@ -18,21 +15,13 @@ const (
 )
 
 func main() {
-	runtime.LockOSThread()
-
-	err := glfw.Init()
-	if err != nil {
-		panic(err)
-	}
-	defer glfw.Terminate()
-
 	renderer, err := gfx.Init(width, height, VERSION)
 	if err != nil {
 		panic(err)
 	}
+	defer gfx.Terminate()
 
-	version := gl.GoStr(gl.GetString(gl.VERSION))
-	fmt.Println("OpenGL version", version)
+	fmt.Println("OpenGL version", renderer.Version)
 
 	scene, err := game.BuildScene()
 	if err != nil {
@@ -41,7 +30,7 @@ func main() {
 
 	gfx.CheckAndPrintErrors()
 
-	for !renderer.Window.ShouldClose() {
+	for renderer.Run() {
 		tex.ProcessUpdates()
 		obj.ProcessUpdates(nil)
 
@@ -51,6 +40,6 @@ func main() {
 
 		gfx.CheckAndPrintErrors()
 
-		glfw.PollEvents()
+		game.ProcessInput()
 	}
 }
