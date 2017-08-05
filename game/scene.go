@@ -89,6 +89,9 @@ func (self Scene) Render() {
 	gl.Uniform1f(gl.GetUniformLocation(program, gl.Str("ambient\x00")), 0.5)
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("projection\x00")), 1, false, &self.Camera.Projection[0])
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("view\x00")), 1, false, &self.Camera.Transform[0])
+	l := gl.GetUniformLocation(program, gl.Str("cameraPos\x00"))
+	p := self.Camera.Position;
+	gl.Uniform3f(l, p[0], p[1], p[2])
 
 	// Render the level
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &self.Level.Transform[0])
