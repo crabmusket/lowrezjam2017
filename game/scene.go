@@ -64,7 +64,7 @@ func BuildScene() (*Scene, error) {
 
 	scene := &Scene{
 		Camera: &Camera{
-			Position: mgl.Vec3{0, 0, 0}.
+			Position: mgl.Vec3{0, 0, 0},
 			Pitch: 0,
 			Yaw: 0,
 			Transform: mgl.Translate3D(0, 0, 0),
