@@ -30,6 +30,8 @@ func main() {
 
 	gfx.CheckAndPrintErrors()
 
+	game.InitInput(renderer.Window)
+
 	for renderer.Run() {
 		tex.ProcessUpdates()
 		obj.ProcessUpdates(nil)
@@ -40,6 +42,8 @@ func main() {
 
 		gfx.CheckAndPrintErrors()
 
-		game.ProcessInput()
+		if game.ProcessInput(renderer.Window, scene) == false {
+			break
+		}
 	}
 }

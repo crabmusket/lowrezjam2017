@@ -15,6 +15,9 @@ type Scene struct{
 }
 
 type Camera struct{
+	Position mgl.Vec3
+	Pitch float32
+	Yaw float32
 	Transform mgl.Mat4
 	Projection mgl.Mat4
 }
