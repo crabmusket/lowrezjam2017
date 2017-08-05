@@ -6,6 +6,12 @@ import (
 	"math"
 )
 
+const (
+	moveSpeed float32 = 3
+	pitchSpeed float32 = 1
+	yawSpeed float32 = 2
+)
+
 var (
 	time float64
 	exit bool
@@ -38,8 +44,8 @@ func ProcessInput(window *glfw.Window, scene *Scene) bool {
 
 	yaw := dl - dr
 	pitch := dd - du
-	scene.Camera.Yaw += yaw * dt
-	scene.Camera.Pitch += pitch * dt
+	scene.Camera.Yaw += yawSpeed * yaw * dt
+	scene.Camera.Pitch += pitchSpeed * pitch * dt
 	threshold := float32(math.Pi)/2 - 0.01
 	if scene.Camera.Pitch > threshold {
 		scene.Camera.Pitch = threshold
@@ -62,8 +68,8 @@ func ProcessInput(window *glfw.Window, scene *Scene) bool {
 	ahead := w - s
 	right := d - a
 	scene.Camera.Position = scene.Camera.Position.
-		Add(cameraRightV.Mul(right * dt)).
-		Add(cameraFrontV.Mul(ahead * dt))
+		Add(cameraRightV.Mul(moveSpeed * right * dt)).
+		Add(cameraFrontV.Mul(moveSpeed * ahead * dt))
 
 	// Construct final transform
 	up := mgl.Vec3{0, 1, 0}
