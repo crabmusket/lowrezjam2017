@@ -30,7 +30,7 @@ type StaticRendered struct{
 }
 
 func BuildScene() (*Scene, error) {
-	levelTexture, err := tex.Load("resources/textures/level.png")
+	levelTexture, err := tex.Load("resources/textures/atlas.png")
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func BuildScene() (*Scene, error) {
 			Pitch: 0,
 			Yaw: 0,
 			Transform: mgl.Translate3D(0, 0, 0),
-			Projection: mgl.Perspective(mgl.DegToRad(45), 1, 0.1, 100),
+			Projection: mgl.Perspective(mgl.DegToRad(60), 1, 0.1, 100),
 		},
 
 		Level: &StaticRendered{
@@ -86,7 +86,7 @@ func (self Scene) Render() {
 	program := self.Level.Shader
 	gl.UseProgram(program)
 
-	gl.Uniform1f(gl.GetUniformLocation(program, gl.Str("ambient\x00")), 0.5)
+	gl.Uniform1f(gl.GetUniformLocation(program, gl.Str("ambient\x00")), 0.3)
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("projection\x00")), 1, false, &self.Camera.Projection[0])
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("view\x00")), 1, false, &self.Camera.Transform[0])
 	l := gl.GetUniformLocation(program, gl.Str("cameraPos\x00"))
