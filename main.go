@@ -9,13 +9,14 @@ import (
 )
 
 const (
+	TITLE = "CASTLEROOK"
 	VERSION = "#LOWREZJAM2017"
 	width = 320
 	height = 320
 )
 
 func main() {
-	renderer, err := gfx.Init(width, height, VERSION)
+	renderer, err := gfx.Init(width, height, TITLE + " - " + VERSION)
 	if err != nil {
 		panic(err)
 	}
