@@ -3,6 +3,7 @@ package textures
 import (
 	"github.com/fsnotify/fsnotify"
 	"image"
+	"time"
 )
 
 type TextureUpdate struct {
@@ -61,6 +62,8 @@ func (self *Texture) Watch() error {
 			default:
 				// do nothing
 			}
+
+			time.Sleep(100 * time.Millisecond)
 		}
 	}()
 

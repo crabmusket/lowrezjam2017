@@ -3,6 +3,7 @@ package obj
 import (
 	"github.com/fsnotify/fsnotify"
 	"os"
+	"time"
 )
 
 type ObjectUpdate struct {
@@ -77,6 +78,8 @@ func (self *Object) Watch() error {
 			default:
 				// do nothing
 			}
+
+			time.Sleep(100 * time.Millisecond)
 		}
 	}()
 
