@@ -207,7 +207,7 @@ func (self ObjData) Finish() (*Object, error) {
 	for i, material := range(self.Materials) {
 		object.Materials[i].Name = material.Name
 		object.Materials[i].Start = material.Start
-		if i < numMaterials {
+		if i < numMaterials-1 {
 			object.Materials[i].End = self.Materials[i+1].Start
 		} else {
 			object.Materials[i].End = uint32(numVerts)
