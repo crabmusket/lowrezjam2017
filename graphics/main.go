@@ -104,6 +104,8 @@ func initOpenGL() error {
 
 	gl.ClearColor(0, 0, 0, 1)
 	gl.Enable(gl.DEPTH_TEST)
+	gl.Enable(gl.FRAMEBUFFER_SRGB);
+	gl.Enable(gl.CULL_FACE);
 
 	return nil
 }
