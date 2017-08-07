@@ -34,6 +34,7 @@ var (
 		"resources/textures/wall_stone.png",
 		"resources/textures/wall_plain.png",
 		"resources/textures/roof_wood.png",
+		"resources/textures/floor_tiled.png",
 	}
 )
 
