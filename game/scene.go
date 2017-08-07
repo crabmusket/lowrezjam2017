@@ -38,7 +38,7 @@ var (
 	}
 )
 
-func BuildScene() (*Scene, error) {
+func BuildScene(watch bool) (*Scene, error) {
 	library := tex.MakeLibrary()
 
 	for _, file := range(textures) {
@@ -47,7 +47,7 @@ func BuildScene() (*Scene, error) {
 			return nil, err
 		}
 
-		if true {
+		if watch {
 			err := texture.Watch()
 			if err != nil {
 				return nil, err
@@ -63,7 +63,7 @@ func BuildScene() (*Scene, error) {
 		fmt.Printf("%+v\n", warning)
 	}
 
-	if true {
+	if watch {
 		err := level1.Watch()
 		if err != nil {
 			return nil, err

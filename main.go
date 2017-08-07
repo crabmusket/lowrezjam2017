@@ -6,6 +6,9 @@ import (
 	game "github.com/crabmusket/lowrezjam2017/game"
 	obj "github.com/crabmusket/lowrezjam2017/obj"
 	tex "github.com/crabmusket/lowrezjam2017/tex"
+	flag "launchpad.net/gnuflag"
+	"os"
+	"runtime/pprof"
 )
 
 const (
@@ -15,7 +18,23 @@ const (
 	height = 320
 )
 
+var (
+	flagCpuProfile = flag.String("cpuprofile", "", "output CPU profile information to this file"),
+	flagWatch = flag.Bool("watch", false, "watch texture and model files for live-reloading"),
+)
+
 func main() {
+	flag.Parse(true)
+
+	if flagCpuProfile != "" {
+		file, err := os.Create(flagCpuProfile)
+		if err != nil {
+			panic(err)
+		}
+		pprof.StartCPUProfile(file)
+		defer pprof.StopCPUProfile()
+	}
+
 	renderer, err := gfx.Init(width, height, TITLE + " - " + VERSION)
 	if err != nil {
 		panic(err)
@@ -24,7 +43,7 @@ func main() {
 
 	fmt.Println("OpenGL version", renderer.Version)
 
-	scene, err := game.BuildScene()
+	scene, err := game.BuildScene(watch)
 	if err != nil {
 		panic(err)
 	}
