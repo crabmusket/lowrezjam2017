@@ -9,6 +9,12 @@ import (
 	"strings"
 )
 
+type Material struct{
+	Name string
+	Start uint32
+	End uint32
+}
+
 type Object struct{
 	Filename string
 	Id uint32
@@ -16,6 +22,12 @@ type Object struct{
 	Indices []uint32
 	Vbo uint32
 	Ebo uint32
+	Materials []Material
+}
+
+type MaterialData struct{
+	Name string
+	Start uint32
 }
 
 type ObjData struct{
@@ -25,6 +37,7 @@ type ObjData struct{
 	FaceVerts []uint32
 	VertTextureCoords []uint32
 	VertNormals []uint32
+	Materials []MaterialData
 }
 
 type Warning struct {
@@ -139,6 +152,12 @@ func Read(reader io.Reader) (*Object, []*Warning, error) {
 			}
 			warnings = append(warnings, lineWarnings...)
 
+		case "usemtl":
+			if len(components) != 2 {
+				continue
+			}
+			handleMaterial(obj, components[1])
+
 		default:
 			continue
 		}
@@ -159,6 +178,7 @@ func (self ObjData) Finish() (*Object, error) {
 	object := &Object{
 		Indices: make([]uint32, numVerts),
 		Vertices: make([]float32, numVerts * stride),
+		Materials: make([]Material, len(self.Materials)),
 	}
 
 	for vert := 0; vert < numVerts; vert += 1 {
@@ -181,6 +201,17 @@ func (self ObjData) Finish() (*Object, error) {
 
 	if len(object.Vertices) == 0 || len(object.Indices) == 0 {
 		return nil, fmt.Errorf("obj data is empty")
+	}
+
+	numMaterials := len(self.Materials)
+	for i, material := range(self.Materials) {
+		object.Materials[i].Name = material.Name
+		object.Materials[i].Start = material.Start
+		if i < numMaterials {
+			object.Materials[i].End = self.Materials[i+1].Start
+		} else {
+			object.Materials[i].End = uint32(numVerts)
+		}
 	}
 
 	return object, nil
@@ -318,4 +349,11 @@ func handleFace(obj *ObjData, components []string) []*Warning {
 	}
 
 	return warnings
+}
+
+func handleMaterial(obj *ObjData, name string) {
+	obj.Materials = append(obj.Materials, MaterialData{
+		Name: name,
+		Start: uint32(len(obj.FaceVerts)),
+	})
 }

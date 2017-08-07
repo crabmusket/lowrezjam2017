@@ -7,6 +7,7 @@ import (
 	_ "image/png"
 	_ "image/jpeg"
 	"os"
+	"path/filepath"
 )
 
 type Texture struct {
@@ -14,7 +15,7 @@ type Texture struct {
 	Filename string
 }
 
-func Load(filename string) (*Texture, error) {
+func Load(filename string, library Library) (*Texture, error) {
 	data, size, err := loadImage(filename)
 	if err != nil {
 		return nil, err
@@ -24,6 +25,13 @@ func Load(filename string) (*Texture, error) {
 		Filename: filename,
 	}
 	texture.Bind(data, size)
+
+	if library != nil {
+		textureName := filepath.Base(filename)
+		extension := filepath.Ext(filename)
+		textureKey := textureName[0:len(textureName)-len(extension)]
+		library[textureKey] = texture
+	}
 
 	return texture, nil
 }

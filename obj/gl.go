@@ -1,6 +1,7 @@
 package obj
 
 import (
+	tex "github.com/crabmusket/lowrezjam2017/tex"
 	"github.com/go-gl/gl/v3.2-core/gl"
 )
 
@@ -43,8 +44,20 @@ func (self *Object) Unbind() {
 	gl.DeleteBuffers(1, &self.Ebo)
 }
 
-func (self Object) Render() {
+func (self Object) Render(textures tex.Library) {
 	gl.BindVertexArray(self.Id)
-	gl.DrawElements(gl.TRIANGLES, int32(len(self.Indices)), gl.UNSIGNED_INT, nil)
+
+	for _, material := range(self.Materials) {
+		texture := textures[material.Name]
+		if texture == nil {
+			continue
+		}
+		gl.BindTexture(gl.TEXTURE_2D, texture.Id)
+
+		span := int32(material.End - material.Start)
+		begin := gl.PtrOffset(4 * int(material.Start))
+		gl.DrawElements(gl.TRIANGLES, span, gl.UNSIGNED_INT, begin)
+	}
+
 	gl.BindVertexArray(0)
 }

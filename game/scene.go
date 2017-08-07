@@ -12,6 +12,7 @@ import (
 type Scene struct{
 	Camera *Camera
 	Level *StaticRendered
+	Textures tex.Library
 }
 
 type Camera struct{
@@ -24,21 +25,32 @@ type Camera struct{
 
 type StaticRendered struct{
 	Transform mgl.Mat4
-	Texture *tex.Texture
 	Geometry *obj.Object
 	Shader uint32
 }
 
-func BuildScene() (*Scene, error) {
-	levelTexture, err := tex.Load("resources/textures/atlas.png")
-	if err != nil {
-		return nil, err
+var (
+	textures = []string{
+		"resources/textures/wall_stone.png",
+		"resources/textures/wall_plain.png",
+		"resources/textures/roof_wood.png",
 	}
+)
 
-	if true {
-		err := levelTexture.Watch()
+func BuildScene() (*Scene, error) {
+	library := tex.MakeLibrary()
+
+	for _, file := range(textures) {
+		texture, err := tex.Load(file, library)
 		if err != nil {
 			return nil, err
+		}
+
+		if true {
+			err := texture.Watch()
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -73,10 +85,11 @@ func BuildScene() (*Scene, error) {
 
 		Level: &StaticRendered{
 			Transform: mgl.Translate3D(0, 0, 0),
-			Texture: levelTexture,
 			Geometry: level1,
 			Shader: staticShader,
 		},
+
+		Textures: library,
 	}
 
 	return scene, nil
@@ -95,6 +108,5 @@ func (self Scene) Render() {
 
 	// Render the level
 	gl.UniformMatrix4fv(gl.GetUniformLocation(program, gl.Str("model\x00")), 1, false, &self.Level.Transform[0])
-	gl.BindTexture(gl.TEXTURE_2D, self.Level.Texture.Id)
-	self.Level.Geometry.Render()
+	self.Level.Geometry.Render(self.Textures)
 }
